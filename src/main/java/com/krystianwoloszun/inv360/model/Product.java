@@ -29,7 +29,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false, unique = true)
-    private int sku;
+    private String sku;
 
     @Column(nullable = false)
     private BigDecimal price;
