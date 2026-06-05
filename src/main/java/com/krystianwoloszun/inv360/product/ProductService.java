@@ -3,6 +3,8 @@ package com.krystianwoloszun.inv360.product;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
+
 @Service
 @Transactional
 public class ProductService {
@@ -26,13 +28,13 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + id + " not found."));
+                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + id + " not found."));
     }
 
     @Transactional(readOnly = true)
     public Product getProductBySku(String sku) {
         return productRepository.findBySku(sku)
-                .orElseThrow(() -> new IllegalArgumentException("Product with SKU " + sku + " not found."));
+                .orElseThrow(() -> new ProductNotFoundException("Product with SKU " + sku + " not found."));
     }
 
     @Transactional(readOnly = true)
