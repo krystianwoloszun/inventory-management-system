@@ -1,14 +1,11 @@
 package com.krystianwoloszun.inv360.warehouse;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +25,6 @@ public class Warehouse {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @OneToOne(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @Embedded
     private Address address;
 
