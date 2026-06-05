@@ -21,14 +21,7 @@ A simple inventory management system. (under development)
 
 ## Running
 
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd inv360
-```
-
-2. Run the application:
+Run the application:
 
 ```bash
 ./gradlew bootRun
