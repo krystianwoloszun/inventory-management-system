@@ -8,7 +8,7 @@ import com.krystianwoloszun.inv360.common.exception.WarehouseNotFoundException;
 @Service
 public class WarehouseService {
 
-    WarehouseRepository warehouseRepository;
+    private final WarehouseRepository warehouseRepository;
 
     public WarehouseService(WarehouseRepository warehouseRepository) {
         this.warehouseRepository = warehouseRepository;
