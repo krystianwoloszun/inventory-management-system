@@ -1,11 +1,9 @@
-package com.krystianwoloszun.inv360.repository;
+package com.krystianwoloszun.inv360.product;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.krystianwoloszun.inv360.model.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -14,7 +12,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByName(String name);
 
-    boolean existsBySku(int sku);
+    boolean existsBySku(String sku);
 
     boolean existsByName(String name);
 

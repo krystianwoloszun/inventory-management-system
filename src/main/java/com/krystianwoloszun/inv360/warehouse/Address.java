@@ -1,4 +1,4 @@
-package com.krystianwoloszun.inv360.model;
+package com.krystianwoloszun.inv360.warehouse;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
