@@ -3,6 +3,7 @@ package com.krystianwoloszun.inv360.product;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.krystianwoloszun.inv360.common.exception.ProductAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
 
 @Service
@@ -17,10 +18,10 @@ public class ProductService {
 
     public Product createProduct(Product product) {
         if (productRepository.existsBySku(product.getSku())) {
-            throw new IllegalArgumentException("Product with SKU " + product.getSku() + " already exists.");
+            throw new ProductAlreadyExistsException("Product with SKU " + product.getSku() + " already exists.");
         }
         if (productRepository.existsByName(product.getName())) {
-            throw new IllegalArgumentException("Product with name " + product.getName() + " already exists.");
+            throw new ProductAlreadyExistsException("Product with name " + product.getName() + " already exists.");
         }
         return productRepository.save(product);
     }
@@ -40,18 +41,18 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product getProductByName(String name) {
         return productRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Product with name " + name + " not found."));
+                .orElseThrow(() -> new ProductNotFoundException("Product with name " + name + " not found."));
     }
 
     public Product updateProduct(Long id, Product updatedProduct) {
         Product existingProduct = getProductById(id);
         if (!existingProduct.getSku().equals(updatedProduct.getSku())
                 && productRepository.existsBySku(updatedProduct.getSku())) {
-            throw new IllegalArgumentException("Product with SKU " + updatedProduct.getSku() + " already exists.");
+            throw new ProductAlreadyExistsException("Product with SKU " + updatedProduct.getSku() + " already exists.");
         }
         if (!existingProduct.getName().equals(updatedProduct.getName())
                 && productRepository.existsByName(updatedProduct.getName())) {
-            throw new IllegalArgumentException("Product with name " + updatedProduct.getName() + " already exists.");
+            throw new ProductAlreadyExistsException("Product with name " + updatedProduct.getName() + " already exists.");
         }
         existingProduct.setName(updatedProduct.getName());
         existingProduct.setDescription(updatedProduct.getDescription());
@@ -62,7 +63,7 @@ public class ProductService {
 
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new IllegalArgumentException("Product with ID " + id + " not found.");
+            throw new ProductNotFoundException("Product with ID " + id + " not found.");
         }
         productRepository.deleteById(id);
     }

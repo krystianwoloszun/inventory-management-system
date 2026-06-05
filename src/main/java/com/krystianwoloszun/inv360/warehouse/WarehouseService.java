@@ -46,6 +46,9 @@ public class WarehouseService {
 
     public void deleteWarehouse(Long id) {
         Warehouse existingWarehouse = getWarehouseById(id);
+        if (existingWarehouse == null) {
+            throw new WarehouseNotFoundException("Warehouse with ID " + id + " not found.");
+        }
         warehouseRepository.delete(existingWarehouse);
     }
 
