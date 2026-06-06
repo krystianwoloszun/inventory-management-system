@@ -12,6 +12,8 @@ import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.InvalidQuantityException;
+import com.krystianwoloszun.inv360.common.exception.StockMovementNotFoundException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -48,5 +50,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidQuantityException.class)
     public ResponseEntity<String> handleInvalidQuantity(InvalidQuantityException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(StockMovementNotFoundException.class)
+    public ResponseEntity<String> handleStockMovementNotFound(StockMovementNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }
