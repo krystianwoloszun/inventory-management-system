@@ -5,14 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.krystianwoloszun.inv360.common.exception.InsufficientStockException;
+import com.krystianwoloszun.inv360.common.exception.InvalidQuantityException;
+import com.krystianwoloszun.inv360.common.exception.InvalidWarehouseTransferException;
 import com.krystianwoloszun.inv360.common.exception.InventoryAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.InventoryNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.ProductAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
+import com.krystianwoloszun.inv360.common.exception.StockMovementNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseNotFoundException;
-import com.krystianwoloszun.inv360.common.exception.InvalidQuantityException;
-import com.krystianwoloszun.inv360.common.exception.StockMovementNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,5 +57,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StockMovementNotFoundException.class)
     public ResponseEntity<String> handleStockMovementNotFound(StockMovementNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidWarehouseTransferException.class)
+    public ResponseEntity<String> handleInvalidWarehouseTransfer(InvalidWarehouseTransferException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<String> handleInsufficientStock(InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
