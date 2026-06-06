@@ -14,4 +14,7 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
 
     List<StockMovement> findByTargetWarehouseId(Long warehouseId);
 
+    List<StockMovement> findBySourceWarehouseIdAndTargetWarehouseId(
+        Long sourceWarehouseId,
+        Long targetWarehouseId);
 }
