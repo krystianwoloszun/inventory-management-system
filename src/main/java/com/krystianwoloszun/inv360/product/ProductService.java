@@ -1,5 +1,7 @@
 package com.krystianwoloszun.inv360.product;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +54,8 @@ public class ProductService {
         }
         if (!existingProduct.getName().equals(updatedProduct.getName())
                 && productRepository.existsByName(updatedProduct.getName())) {
-            throw new ProductAlreadyExistsException("Product with name " + updatedProduct.getName() + " already exists.");
+            throw new ProductAlreadyExistsException(
+                    "Product with name " + updatedProduct.getName() + " already exists.");
         }
         existingProduct.setName(updatedProduct.getName());
         existingProduct.setDescription(updatedProduct.getDescription());
@@ -61,10 +64,13 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+    @Transactional(readOnly = true)
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException("Product with ID " + id + " not found.");
-        }
-        productRepository.deleteById(id);
+        Product product = getProductById(id);
+        productRepository.delete(product);
     }
 }
