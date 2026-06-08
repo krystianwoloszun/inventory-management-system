@@ -2,12 +2,10 @@ package com.krystianwoloszun.inv360.warehouse.dto;
 
 public record WarehouseResponse(
 
+        Long id,
         String name,
-
-        String street,
-        String buildingNumber,
-        String city,
-        String postalCode
+        String description,
+        AddressResponse address
 
 ) {
 }
