@@ -1,7 +1,8 @@
 package com.krystianwoloszun.inv360.inventory.dto;
 
 record RemoveStockRequest(
-        Long warehouseId,
-        Long productId,
-        int quantity) {
+                Long id,
+                Long warehouseId,
+                Long productId,
+                int quantity) {
 }
