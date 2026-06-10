@@ -1,6 +1,7 @@
 package com.krystianwoloszun.inv360.inventory;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,12 @@ import com.krystianwoloszun.inv360.common.exception.InventoryAlreadyExistsExcept
 import com.krystianwoloszun.inv360.common.exception.InventoryNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseNotFoundException;
+import com.krystianwoloszun.inv360.inventory.dto.AddStockRequest;
+import com.krystianwoloszun.inv360.inventory.dto.CreateInventoryRequest;
+import com.krystianwoloszun.inv360.inventory.dto.InventoryResponse;
+import com.krystianwoloszun.inv360.inventory.dto.RemoveStockRequest;
+import com.krystianwoloszun.inv360.inventory.dto.TransferStockRequest;
+import com.krystianwoloszun.inv360.inventory.dto.UpdateInventoryRequest;
 import com.krystianwoloszun.inv360.product.Product;
 import com.krystianwoloszun.inv360.product.ProductRepository;
 import com.krystianwoloszun.inv360.stockmovement.OperationType;
@@ -41,34 +48,44 @@ public class InventoryService {
         this.stockMovementRepository = stockMovementRepository;
     }
 
-    public Inventory createInventory(Long productId, Long warehouseId, int quantity) {
+    private InventoryResponse toResponse(Inventory inventory) {
+        return new InventoryResponse(
+                inventory.getId(),
+                inventory.getWarehouse().getId(),
+                inventory.getProduct().getId(),
+                inventory.getQuantity());
+    }
 
-        validateInventoryQuantity(quantity);
+    public InventoryResponse createInventory(CreateInventoryRequest request) {
 
-        Product product = productRepository.findById(productId)
+        validateInventoryQuantity(request.quantity());
+
+        Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new ProductNotFoundException(
-                        "Product with ID " + productId + " not found."));
+                        "Product with ID " + request.productId() + " not found."));
 
-        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+        Warehouse warehouse = warehouseRepository.findById(request.warehouseId())
                 .orElseThrow(() -> new WarehouseNotFoundException(
-                        "Warehouse with ID " + warehouseId + " not found."));
+                        "Warehouse with ID " + request.warehouseId() + " not found."));
 
-        if (inventoryRepository.existsByProductIdAndWarehouseId(productId, warehouseId)) {
+        if (inventoryRepository.existsByProductIdAndWarehouseId(request.productId(), request.warehouseId())) {
             throw new InventoryAlreadyExistsException(
-                    "Inventory for product ID " + productId +
-                            " and warehouse ID " + warehouseId +
+                    "Inventory for product ID " + request.productId() +
+                            " and warehouse ID " + request.warehouseId() +
                             " already exists.");
         }
 
         Inventory inventory = Inventory.builder()
                 .product(product)
                 .warehouse(warehouse)
-                .quantity(quantity)
+                .quantity(request.quantity())
                 .build();
 
-        return inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
+
+        return toResponse(saved);
     }
-    
+
     private Inventory createEmptyInventory(Long productId, Long warehouseId) {
 
         Product product = productRepository.findById(productId)
@@ -86,25 +103,25 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public Inventory getInventoryByProductIdAndWarehouseId(Long productId, Long warehouseId) {
-        return inventoryRepository.findByProductIdAndWarehouseId(productId, warehouseId)
-                .orElseThrow(() -> new InventoryNotFoundException(
-                        "Inventory for product ID " + productId +
-                                " and warehouse ID " + warehouseId +
-                                " not found."));
+    public InventoryResponse getInventoryByProductIdAndWarehouseId(Long productId, Long warehouseId) {
+        Inventory inventory = getInventoryEntityByProductIdAndWarehouseId(productId, warehouseId);
+
+        return toResponse(inventory);
     }
 
-    public Inventory updateInventory(Long id, Inventory updatedInventory) {
+    public InventoryResponse updateInventory(Long id, UpdateInventoryRequest request) {
 
-        validateInventoryQuantity(updatedInventory.getQuantity());
+        validateInventoryQuantity(request.quantity());
 
         Inventory existingInventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new InventoryNotFoundException(
                         "Inventory with ID " + id + " not found."));
 
-        existingInventory.setQuantity(updatedInventory.getQuantity());
+        existingInventory.setQuantity(request.quantity());
 
-        return inventoryRepository.save(existingInventory);
+        Inventory saved = inventoryRepository.save(existingInventory);
+
+        return toResponse(saved);
     }
 
     public void deleteInventory(Long id) {
@@ -116,82 +133,115 @@ public class InventoryService {
         inventoryRepository.delete(inventory);
     }
 
-    private void validateInventoryQuantity(int quantity) {
+    @Transactional(readOnly = true)
+    public List<InventoryResponse> getAllInventories() {
+        return inventoryRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private Inventory getInventoryEntityByProductIdAndWarehouseId(Long productId, Long warehouseId) {
+        return inventoryRepository.findByProductIdAndWarehouseId(productId, warehouseId)
+                .orElseThrow(() -> new InventoryNotFoundException(
+                        "Inventory for product ID " + productId +
+                                " and warehouse ID " + warehouseId +
+                                " not found."));
+    }
+
+    private void validateInventoryQuantity(Integer quantity) {
+        if (quantity == null) {
+            throw new InvalidQuantityException("Quantity cannot be null.");
+        }
+
         if (quantity < 0) {
             throw new InvalidQuantityException("Quantity cannot be negative.");
         }
     }
 
-    private void validateMovementQuantity(int quantity) {
+    private void validateMovementQuantity(Integer quantity) {
+        if (quantity == null) {
+            throw new InvalidQuantityException("Quantity cannot be null.");
+        }
+
         if (quantity <= 0) {
             throw new InvalidQuantityException("Quantity cannot be zero or negative.");
         }
     }
 
-    public void addStock(Long productId, Long warehouseId, int quantityToAdd) {
+    public InventoryResponse addStock(AddStockRequest request) {
 
-        validateMovementQuantity(quantityToAdd);
+        validateMovementQuantity(request.quantity());
 
-        Inventory inventory = getInventoryByProductIdAndWarehouseId(productId, warehouseId);
-        inventory.setQuantity(inventory.getQuantity() + quantityToAdd);
+        Inventory inventory = getInventoryEntityByProductIdAndWarehouseId(request.productId(), request.warehouseId());
+        inventory.setQuantity(inventory.getQuantity() + request.quantity());
 
         stockMovementRepository.save(StockMovement.builder()
                 .product(inventory.getProduct())
                 .sourceWarehouse(null)
                 .targetWarehouse(inventory.getWarehouse())
-                .quantity(quantityToAdd)
+                .quantity(request.quantity())
                 .operationType(OperationType.IN)
                 .movementDate(LocalDateTime.now())
                 .build());
+
+        return toResponse(inventory);
     }
 
-    public void removeStock(Long productId, Long warehouseId, int quantityToRemove) {
+    public InventoryResponse removeStock(RemoveStockRequest request) {
 
-        validateMovementQuantity(quantityToRemove);
+        validateMovementQuantity(request.quantity());
 
-        Inventory inventory = getInventoryByProductIdAndWarehouseId(productId, warehouseId);
-        if (inventory.getQuantity() < quantityToRemove) {
+        Inventory inventory = getInventoryEntityByProductIdAndWarehouseId(request.productId(), request.warehouseId());
+        if (inventory.getQuantity() < request.quantity()) {
             throw new InsufficientStockException(
                     "Cannot remove more stock than available. Current quantity: " + inventory.getQuantity());
         }
-        inventory.setQuantity(inventory.getQuantity() - quantityToRemove);
+        inventory.setQuantity(inventory.getQuantity() - request.quantity());
 
         stockMovementRepository.save(StockMovement.builder()
                 .product(inventory.getProduct())
                 .sourceWarehouse(inventory.getWarehouse())
                 .targetWarehouse(null)
-                .quantity(quantityToRemove)
+                .quantity(request.quantity())
                 .operationType(OperationType.OUT)
                 .movementDate(LocalDateTime.now())
                 .build());
+
+        return toResponse(inventory);
     }
 
-    public void transferStock(Long productId, Long sourceWarehouseId, Long targetWarehouseId, int quantityToTransfer) {
+    public List<InventoryResponse> transferStock(TransferStockRequest request) {
 
-        validateMovementQuantity(quantityToTransfer);
-        if(sourceWarehouseId.equals(targetWarehouseId)) {
+        validateMovementQuantity(request.quantity());
+        if (request.sourceWarehouseId().equals(request.targetWarehouseId())) {
             throw new InvalidWarehouseTransferException("Cannot transfer stock within the same warehouse.");
         }
 
-        Inventory sourceInventory = getInventoryByProductIdAndWarehouseId(productId, sourceWarehouseId);
-        if (sourceInventory.getQuantity() < quantityToTransfer) {
+        Inventory sourceInventory = getInventoryEntityByProductIdAndWarehouseId(request.productId(),
+                request.sourceWarehouseId());
+        if (sourceInventory.getQuantity() < request.quantity()) {
             throw new InsufficientStockException(
-                    "Cannot transfer more stock than available in source warehouse. Current quantity: " + sourceInventory.getQuantity());
+                    "Cannot transfer more stock than available in source warehouse. Current quantity: "
+                            + sourceInventory.getQuantity());
         }
 
-        Inventory targetInventory = inventoryRepository.findByProductIdAndWarehouseId(productId, targetWarehouseId)
-                .orElseGet(() -> createEmptyInventory(productId, targetWarehouseId));
+        Inventory targetInventory = inventoryRepository
+                .findByProductIdAndWarehouseId(request.productId(), request.targetWarehouseId())
+                .orElseGet(() -> createEmptyInventory(request.productId(), request.targetWarehouseId()));
 
-        sourceInventory.setQuantity(sourceInventory.getQuantity() - quantityToTransfer);
-        targetInventory.setQuantity(targetInventory.getQuantity() + quantityToTransfer);
+        sourceInventory.setQuantity(sourceInventory.getQuantity() - request.quantity());
+        targetInventory.setQuantity(targetInventory.getQuantity() + request.quantity());
 
         stockMovementRepository.save(StockMovement.builder()
                 .product(sourceInventory.getProduct())
                 .sourceWarehouse(sourceInventory.getWarehouse())
                 .targetWarehouse(targetInventory.getWarehouse())
-                .quantity(quantityToTransfer)
+                .quantity(request.quantity())
                 .operationType(OperationType.TRANSFER)
                 .movementDate(LocalDateTime.now())
                 .build());
+
+        return List.of(toResponse(sourceInventory), toResponse(targetInventory));
     }
 }

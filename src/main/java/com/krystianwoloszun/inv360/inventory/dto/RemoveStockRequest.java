@@ -1,8 +1,10 @@
 package com.krystianwoloszun.inv360.inventory.dto;
 
-record RemoveStockRequest(
-                Long id,
-                Long warehouseId,
-                Long productId,
-                int quantity) {
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+public record RemoveStockRequest(
+                @NotNull Long warehouseId,
+                @NotNull Long productId,
+                @NotNull @Positive Integer quantity) {
 }
