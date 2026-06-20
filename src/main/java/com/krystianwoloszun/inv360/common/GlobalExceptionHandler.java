@@ -13,6 +13,7 @@ import com.krystianwoloszun.inv360.common.exception.InventoryNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.ProductAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.ProductNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.StockMovementNotFoundException;
+import com.krystianwoloszun.inv360.common.exception.UserNotFoundException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseAlreadyExistsException;
 import com.krystianwoloszun.inv360.common.exception.WarehouseNotFoundException;
 
@@ -67,5 +68,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<String> handleInsufficientStock(InsufficientStockException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }
