@@ -28,8 +28,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-inv360}
       POSTGRES_USER: ${POSTGRES_USER:-inv360}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-inv360}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:

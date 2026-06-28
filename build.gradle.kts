@@ -20,7 +20,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-	implementation("org.springframework.boot:spring-boot-starter-security")
+	//implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
@@ -33,6 +33,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testCompileOnly("org.projectlombok:lombok")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testRuntimeOnly("com.h2database:h2")
 	testAnnotationProcessor("org.projectlombok:lombok")
 }
 

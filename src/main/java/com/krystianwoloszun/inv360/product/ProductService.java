@@ -32,7 +32,7 @@ public class ProductService {
 
     public ProductResponse createProduct(CreateProductRequest request) {
 
-        if (productRepository.existsBySku(request.name())) {
+        if (productRepository.existsBySku(request.sku())) {
             throw new ProductAlreadyExistsException("Product with SKU " + request.sku() + " already exists.");
         }
 
